@@ -44,10 +44,12 @@ public class MemberJpaRepository {
     }
 
     public List<Member> findByUsernameAndAgeGreaterThan(String username, int age) {
-        return em.createQuery("select m from Member m where m.username =:username and m.age > :age")
+        List<Member> resultList = em.createQuery("select m from Member m where m.username =:username and m.age > :age",Member.class)
                 .setParameter("username", username)
                 .setParameter("age", age)
                 .getResultList();
+
+        return  resultList;
     }
 
     public List<Member> findByUsername(String username) {
@@ -57,7 +59,7 @@ public class MemberJpaRepository {
     }
 
     public List<Member> findByPage(int age, int offset, int limit) {
-        return em.createQuery("select m from Member m where m.age = :age order by m.username desc ")
+        return em.createQuery("select m from Member m where m.age = :age order by m.username desc",Member.class)
                 .setParameter("age", age)
                 .setFirstResult(offset)
                 .setMaxResults(limit)
@@ -68,5 +70,13 @@ public class MemberJpaRepository {
         return em.createQuery("select count(m) from Member m where m.age =:age", Long.class)
                 .setParameter("age", age)
                 .getSingleResult();
+    }
+
+    //JPA 순수한 벌크 업데이트
+    public int bulkAgePlus(int age) {
+        int resultCount = em.createQuery("update Member m set m.age = m.age +1 where m.age >= :age")
+                .setParameter("age", age)
+                .executeUpdate();
+        return resultCount;
     }
 }

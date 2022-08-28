@@ -31,14 +31,14 @@ public class MemberController {
         return member.getUsername();
     }
 
-    //Web 확장
+    //Web 확장 페이징과 정렬
     // url에 localhost:8080/members?page=0
     // url에 localhost:8080/members?page=0&size=3&sort=id,desc 등 다 사용가능
     @GetMapping("members")
     public Page<MemberDto> list(@PageableDefault(size = 5) Pageable pageable) {
         Page<Member> page = memberRepository.findAll(pageable);
 
-        Page<MemberDto> map = page.map(member -> new MemberDto(member.getId(), member.getUsername(), null));
+        Page<MemberDto> map = page.map(member -> new MemberDto(member));
         return map;
     }
 

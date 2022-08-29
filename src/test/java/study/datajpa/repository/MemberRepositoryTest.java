@@ -4,9 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
@@ -292,4 +290,63 @@ class MemberRepositoryTest {
     public void callCustom() {
         List<Member> result = memberRepository.findMemberCustom();
     }
+
+
+    @Test
+    public void queryByExample() {
+        //outer 조인이 안됌, inner 조인만 가능
+
+        //given
+        Team teamA = new Team("teamA");
+        em.persist(teamA);
+
+        Member m1 = new Member("m1", 10, teamA);
+        Member m2 = new Member("m2", 10, teamA);
+        em.persist(m1);
+        em.persist(m2);
+
+        em.flush();
+        em.clear();
+
+        //when
+        //엔티티 자체가 검색 조건이 됌
+        Member member = new Member("m1");
+        Team team = new Team("teamA");
+        member.setTeam(team);
+
+        //age는 프리미티브 타입으로 null이 안되니 무시하기 위해 아래 로직 추가
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withIgnoreCase("age");
+
+        Example<Member> example = Example.of(member, matcher);
+
+        //Jpa에서 example 받는 것을 기본으로 넣었음
+        List<Member> result = memberRepository.findAll(example);
+
+        assertThat(result.get(0).getUsername()).isEqualTo("m1");
+    }
+
+    //Entity 조회말고 값만 조회하는법
+    @Test
+    public void projections() {
+        //given
+        Team teamA = new Team("teamA");
+        em.persist(teamA);
+
+        Member m1 = new Member("m1", 10, teamA);
+        Member m2 = new Member("m2", 10, teamA);
+        em.persist(m1);
+        em.persist(m2);
+
+        em.flush();
+        em.clear();
+
+        //when
+        List<UsernameOnlyDto> result = memberRepository.findProjectionsByUsername("m1");
+
+        for (UsernameOnlyDto usernameOnly : result) {
+            System.out.println("usernameOnly = " + usernameOnly);
+        }
+    }
+
 }

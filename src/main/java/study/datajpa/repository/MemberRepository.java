@@ -16,7 +16,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom, JpaSpecificationExecutor<Member> {
+//JpaSpecificationExecutor는 Specification임 실무에 안씀
 
     List<Member> findByUsernameAndAgeGreaterThan(String username, int age);
 
@@ -94,4 +95,7 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
     @Lock(LockModeType.PESSIMISTIC_WRITE) //락기능이라함..
     List<Member> findLockByUsername(String username);
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //find와 By사이에는 아무거나 들어가도됌
+    List<UsernameOnlyDto> findProjectionsByUsername(@Param("username") String username);
 }

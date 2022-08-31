@@ -47,8 +47,10 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
     //반환타입에 대해서
     //List는 없어도 null 아님 그냥 list로 받을 것
     List<Member> findListByUsername(String username); //컬렉션
+
     //단건은 없으면 null임
-    Member findMemberByUsername(String  username);//단건
+    Member findMemberByUsername(String username);//단건
+
     Optional<Member> findOptionalByUsername(String username); //단건 Opional
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -74,14 +76,16 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
     List<Member> findMemberFetchJoin();
 
     @Override
-    @EntityGraph(attributePaths = {"true"}) //jqpl 없이도 fetch join 하는방법 !!
+    @EntityGraph(attributePaths = {"true"})
+        //jqpl 없이도 fetch join 하는방법 !!
     List<Member> findAll();
 
     @EntityGraph(attributePaths = {"true"}) //jqpl 짜논 것에 entityGraph만 살짝 얹는 것도 가능
     @Query("select m from Member m")
     List<Member> findMemberEntityGraph();
 
-    @EntityGraph(attributePaths = ("true")) //메소드 함수에 entityGraph만 살짝 얹는 것도 가능
+    @EntityGraph(attributePaths = ("true"))
+        //메소드 함수에 entityGraph만 살짝 얹는 것도 가능
 //    @EntityGraph("Member.all") // Entity 에 NamedEntityGraph 지정해서도 사용가능 잘 안씀
     List<Member> findEntityGraphByUsername(@Param("username") String username);
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,10 +96,20 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
     @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true"))
     Member findReadOnlyByUsername(String username);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE) //락기능이라함..
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+        //락기능이라함..
     List<Member> findLockByUsername(String username);
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //find와 By사이에는 아무거나 들어가도됌
     List<UsernameOnlyDto> findProjectionsByUsername(@Param("username") String username);
+
+    //네이티브 쿼리////////////////////////////////////////////////////////////////////////////////////
+    @Query(value = "select * from Member where username = ?", nativeQuery = true)
+    Member findByNativeQuery(String username);
+
+    @Query(value = "select m.member_id as id, m.username, t.name as teanName from member m left join team t",
+            countQuery = "select count(*) from member" ,
+            nativeQuery = true)
+    Page<MemberProjection> findByNativeProjection(Pageable pageable);
 }
